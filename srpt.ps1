@@ -1,4 +1,4 @@
-#!/opt/homebrew/bin/pwsh-preview
+#!/usr/bin/env pwsh
 # Cooper Maitoza
 # Lab 7 - PowerShell Search and Report
 # CS 3030 - Scripting Languages
@@ -26,44 +26,41 @@ $startTime = get-date
 $allObjects = Get-ChildItem -Recurse -Path $args[0]
 
 foreach ($object in $allObjects) {
-  if (Test-Path -Path $object -PathType Leaf) {
-    #Write-Host "Leaf: $object"
-    $fileCount++
+	if ($object.PSIsContainer) {
+		if ($object -eq (Get-Item $args[0])) {
+			Write-Host $object
+		} else {
+			$directoryCount++
+		}
+	}
+	elseif ($object.Attributes.ToString() -band [System.IO.FileAttributes]::ReparsePoint) {
+	  	$symLinkCount++
+	}
+	else {
+		$fileCount++
 
-    if ($object.CreationTime -lt (Get-Date).AddDays(-365)) {
-      $oldFileCount++
-    }
+		if ($object.CreationTime -lt (Get-Date).AddDays(-365)) {
+		  $oldFileCount++
+		}
 
-    if ($object.length -gt 500000) {
-      $largeFileCount++
-    }
+		if ($object.length -gt 500000) {
+		  $largeFileCount++
+		}
 
-    if ($object.name -match '\.jpg|\.gif|\.bmp') {
-      # Write-Host "graphics: $object"
-      $graphicsFileCount++
-    }
+		if ($object.name -match '\.jpg|\.gif|\.bmp') {
+		  $graphicsFileCount++
+		}
 
-    if ($object.name -match '\.o') {
-      # Write-Host "temp: $object"
-      $tempFileCount++
-    }
+		if ($object.name -match '\.o') {
+		  $tempFileCount++
+		}
 
-    if ($object.name -match '\.bat|\.ps1|\.exe') {
-      # Write-Host "exec: $objct"
-      $exeFileCount++
-    }
+		if ($object.name -match '\.bat|\.ps1|\.exe') {
+		  $exeFileCount++
+		}
 
-    $totalFileSize += $object.length
-
-  }
-  else {
-    #Write-Host "Container: $object"
-    $directoryCount++
-  }
-  if ($object.Attributes.ToString() -band [System.IO.FileAttributes]::ReparsePoint) {
-    Write-Host "symlink: $object"
-    $symLinkCount++
-  }
+		$totalFileSize += $object.length
+	}
 }
 
 
